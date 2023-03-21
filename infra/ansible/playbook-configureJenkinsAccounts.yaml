@@ -1,0 +1,37 @@
+---
+ - hosts: prod
+   become: yes
+   vars:
+    plugin_name: role-strategy
+    users_permission: ./permissions/permissionsForUsers.groovy
+    admin_permission: ./permissions/permissionsForAdmin.groovy
+    destin_file: "/home/ubuntu/"
+    jenkins_address: http://localhost:8080/
+   tasks:
+    - name: add first Jenkins user
+      shell: echo 'jenkins.model.Jenkins.instance.securityRealm.createAccount("{{ first_user }}", "password")' | java -jar jenkins-cli.jar -auth admin:{{ jenkins_password.stdout }} -s {{jenkins_address}} groovy =
+
+    - name: add second Jenkins user
+      shell: echo 'jenkins.model.Jenkins.instance.securityRealm.createAccount("{{ second_user }}", "password")' | java -jar jenkins-cli.jar -auth admin:{{ jenkins_password.stdout }} -s {{jenkins_address}} groovy =
+
+    - name: install Role-based Authorization Strategy plugin
+      shell: java -jar jenkins-cli.jar -s {{jenkins_address}} -auth admin:{{ jenkins_password.stdout }} install-plugin {{ plugin_name }} 
+
+    - name: restart Jenkins
+      shell: java -jar jenkins-cli.jar -s {{jenkins_address}} -auth admin:{{ jenkins_password.stdout }} restart
+
+    - name: get Jenkins password
+      shell: "sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
+      register: jenkins_password
+
+    - name: copy permissions of admin
+      copy: src={{ admin_permission }} dest={{ destin_file }} mode=0555
+
+    - name: set permissions for admin
+      shell: java -jar jenkins-cli.jar -s {{ jenkins_address }} -auth admin:{{ jenkins_password.stdout }} groovy = < {{ admin_permission }}
+
+    - name: copy permissions of users
+      copy: src={{ users_permission }} dest={{ destin_file }} mode=0555
+
+    - name: set permissions for users
+      shell: java -jar jenkins-cli.jar -s {{ jenkins_address }} -auth admin:{{ jenkins_password.stdout }} groovy = < {{ users_permission }}
