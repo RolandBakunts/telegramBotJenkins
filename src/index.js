@@ -38,7 +38,7 @@ setTimeout(async () => {
     })
 }, 10000);
 } else {
-  ctx.replyWithHTML('please provide a City name.', {
+  ctx.replyWithHTML('Please provide a City name.', {
     disable_web_page_preview: false,
 })
 }
