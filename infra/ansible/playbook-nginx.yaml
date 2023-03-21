@@ -1,0 +1,18 @@
+--- 
+- hosts: prod
+  become: yes
+  vars:
+    source: ./jenkins.conf
+    dest: /etc/nginx/conf.d
+  tasks: 
+    - name: ensure nginx is at the latest version
+      apt:
+        name: nginx
+        state: latest
+    # set up reverse proxy for jenkins
+    - name: move jenkins config file to nginx
+      copy: src={{ source }} dest={{ dest }} mode=0555
+    - name: remove unused config
+      shell: sed -i '/include \/etc\/nginx\/sites-enabled\/\*;/d' /etc/nginx/nginx.conf
+    - name: restart nginx
+      shell: systemctl restart nginx

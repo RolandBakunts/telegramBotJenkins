@@ -1,0 +1,33 @@
+---
+ - hosts: prod
+   become: yes
+   vars:
+    first_job_name: weather
+    source_weather_file: "./jobs/weatherJob.xml"
+    jenkins_address: http://localhost:8080/
+    second_job_name: deploy
+    source_deploy_file: "./jobs/deployJob.xml"
+    third_job_name: build
+    source_build_file: "./jobs/buildJob.xml"
+    destin_file: "/home/ubuntu/"
+   tasks:
+    - name: get Jenkins password
+      shell: "sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
+      register: jenkins_password
+
+    # - name: move job config file
+    #   copy: src={{ source_weather_file }} dest={{ destin_file }} mode=0555
+  
+    # - name: create a weather job
+    #   shell: java -jar jenkins-cli.jar -s {{ jenkins_address }} -auth admin:{{ jenkins_password.stdout }} create-job {{first_job_name}} < ./weatherJob.xml
+    - name: move build job config file
+      copy: src={{ source_build_file }} dest={{ destin_file }} mode=0555
+  
+    - name: create a multibranch job
+      shell: java -jar jenkins-cli.jar -s {{ jenkins_address }} -auth admin:{{ jenkins_password.stdout }} create-job {{third_job_name}} < ./buildJob.xml
+
+    - name: move deploy job config file
+      copy: src={{ source_deploy_file }} dest={{ destin_file }} mode=0555
+  
+    - name: create a multibranch job
+      shell: java -jar jenkins-cli.jar -s {{ jenkins_address }} -auth admin:{{ jenkins_password.stdout }} create-job {{second_job_name}} < ./deployJob.xml
