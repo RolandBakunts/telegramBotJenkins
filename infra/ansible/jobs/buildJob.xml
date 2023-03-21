@@ -19,7 +19,7 @@
     stages {
         stage('Clone repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/RolandBakunts/JenkinsTelegram.git'
+                git branch: 'main', url: 'https://github.com/RolandBakunts/telegramBotJenkins.git'
             }
         }
         stage('Build Docker Image') {
