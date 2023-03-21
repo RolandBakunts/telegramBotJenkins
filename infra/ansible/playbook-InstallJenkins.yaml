@@ -1,0 +1,34 @@
+---
+ - hosts: prod
+   become: yes
+   vars:
+    first_user: Roland Bakunts
+    second_user: Aleksandr Slepyntsev
+    plugin_name: role-strategy
+   tasks:
+    - name: ensure the jenkins apt repository key is installed
+      apt_key: url=https://pkg.jenkins.io/debian-stable/jenkins.io.key state=present
+
+    - name: ensure the repository is configured
+      apt_repository: repo='deb https://pkg.jenkins.io/debian-stable binary/' state=present
+
+    - name: ensure jenkins is installed
+      apt: name=jenkins update_cache=yes
+
+    - name: ensure jenkins is running
+      service: name=jenkins state=started
+
+    - name: install Jenkins CLI
+      shell: "wget http://localhost:8080/jnlpJars/jenkins-cli.jar"
+
+# /var/lib/jenkins/secrets/initialAdminPassword
+
+# role=testRole
+# user=testUser
+
+# java -jar /var/jenkins_home/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080/  -auth admin:b7ead7f6b9c945498acf87b91a871000 groovy = <<EOF
+
+# jenkins.model.Jenkins.instance.securityRealm.createAccount("testUser", "testUser") 
+# com.michelin.cio.hudson.plugins.rolestrategy.RoleBasedAuthorizationStrategy.getInstance().doAssignRole("globalRoles", "nre", "testUser" )
+
+# EOF

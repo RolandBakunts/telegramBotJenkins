@@ -1,0 +1,5 @@
+/infra/ansible/hosts
+/infra/terraform/.terraform*
+/infra/terraform/terraform.tfstate*
+/node_modules
+.env

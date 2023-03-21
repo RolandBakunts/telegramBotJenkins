@@ -1,0 +1,46 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.43">
+  <actions/>
+  <description>My DeployJob</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.89">
+    <script>
+pipeline {
+    agent {
+        node {
+             label 'linux_deb'
+        }
+    }
+    environment { 
+        DOCKERHUB_CREDENTIALS=credentials('dockerhub-credentials')
+        REPOSITORY='jenkins'
+        K8_NAME='telegrambot'
+    }
+    stages {
+        stage('Get latest image tag') {
+            steps {
+                script {
+                    latest_tag = sh(
+                        script: 'curl -s -H "Content-Type: application/json" -X GET "https://hub.docker.com/v2/repositories/rolandgryddynamics/jenkins/tags/" | jq -r ".results[].name" | head -n 1',
+                        returnStdout: true
+                    ).trim()
+                    echo "Latest tag is ${latest_tag}"
+                }
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'kube', namespace: '', restrictKubeConfigAccess: false, serverUrl: 'https://192.168.49.2:8443') {
+                   sh "kubectl set image deployment/$K8_NAME $K8_NAME=$DOCKERHUB_CREDENTIALS_USR/$REPOSITORY:${latest_tag} --record=true"
+                }
+          
+            }
+        }
+    }
+}
+    </script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>

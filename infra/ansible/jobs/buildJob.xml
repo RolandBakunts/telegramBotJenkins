@@ -1,0 +1,51 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.43">
+  <actions/>
+  <description>My Pipeline Job</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.89">
+    <script>
+ pipeline {
+    environment { 
+        DOCKERHUB_CREDENTIALS=credentials('dockerhub-credentials')
+        MAIN_REPOSITORY='jenkins'
+    }
+    agent {
+        node {
+             label 'worker1'
+        }
+    }
+    stages {
+        stage('Clone repository') {
+            steps {
+                git branch: 'main', url: 'https://github.com/RolandBakunts/JenkinsTelegram.git'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $DOCKERHUB_CREDENTIALS_USR/$MAIN_REPOSITORY:$BUILD_NUMBER .'
+            }
+        }
+        stage('Login DockerHub') {
+            steps {
+                sh 'docker login -u $DOCKERHUB_CREDENTIALS_USR -p $DOCKERHUB_CREDENTIALS_PSW'
+            }
+        }
+        stage('Deloy Docker Image to DockerHub') {
+            steps {
+                sh 'docker push $DOCKERHUB_CREDENTIALS_USR/$MAIN_REPOSITORY:$BUILD_NUMBER'
+            }
+        }
+    }
+    post {
+        always {
+            sh 'docker logout'
+        }
+    }
+}
+    </script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>
