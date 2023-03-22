@@ -15,11 +15,12 @@
       shell: "sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
       register: jenkins_password
 
-    # - name: move job config file
-    #   copy: src={{ source_weather_file }} dest={{ destin_file }} mode=0555
+    - name: move job config file
+      copy: src={{ source_weather_file }} dest={{ destin_file }} mode=0555
   
-    # - name: create a weather job
-    #   shell: java -jar jenkins-cli.jar -s {{ jenkins_address }} -auth admin:{{ jenkins_password.stdout }} create-job {{first_job_name}} < ./weatherJob.xml
+    - name: create a weather job
+      shell: java -jar jenkins-cli.jar -s {{ jenkins_address }} -auth admin:{{ jenkins_password.stdout }} create-job {{first_job_name}} < ./weatherJob.xml
+      
     - name: move build job config file
       copy: src={{ source_build_file }} dest={{ destin_file }} mode=0555
   
