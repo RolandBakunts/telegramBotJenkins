@@ -2,4 +2,5 @@
 /infra/terraform/.terraform*
 /infra/terraform/terraform.tfstate*
 /node_modules
+/infra/ansible/jenkins-cli.jar
 .env
