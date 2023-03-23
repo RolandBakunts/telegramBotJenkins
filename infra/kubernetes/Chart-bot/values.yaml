@@ -1,0 +1,5 @@
+replicas: 2
+name: telegrambot
+
+containers:
+  image: rolandgryddynamics/jenkins:12

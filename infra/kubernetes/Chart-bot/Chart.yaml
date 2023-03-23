@@ -1,0 +1,6 @@
+apiVersion: apps/v1
+name: App-Helm
+description: yvn-helm
+type: application
+version: 0.1.0
+appversion: "1.2.3"

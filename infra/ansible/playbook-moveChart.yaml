@@ -1,0 +1,9 @@
+---
+ - hosts: worker
+   vars:
+    source_secret_file: "../kubernetes/Chart-bot"
+    destin_file: "/home/ubuntu"
+   tasks:
+    - name: copy Chart-bot directory
+      copy: src={{ source_secret_file }} dest={{ destin_file }} mode=0555
+
