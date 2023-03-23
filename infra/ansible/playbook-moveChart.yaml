@@ -6,4 +6,3 @@
    tasks:
     - name: copy Chart-bot directory
       copy: src={{ source_secret_file }} dest={{ destin_file }} mode=0555
-

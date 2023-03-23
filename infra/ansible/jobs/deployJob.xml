@@ -13,9 +13,14 @@ pipeline {
         }
     }
     environment { 
-        DOCKERHUB_CREDENTIALS=credentials('dockerhub-credentials')
         REPOSITORY='jenkins'
         K8_NAME='telegrambot'
+        BOT_TOKEN=credentials('bot_token')
+        API_TOKEN=credentials('api_token')
+        JENKINS_URL=credentials('jenkins_url')
+        JENKINS_PASSWORD=credentials('jenkins_password')
+        JENKINS_USERNAME=credentials('jenkins_username')
+        DOCKERHUB_CREDENTIALS=credentials('dockerhub-credentials')
     }
     stages {
         stage('Get latest image tag') {
@@ -32,9 +37,8 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'kube', namespace: '', restrictKubeConfigAccess: false, serverUrl: 'https://192.168.49.2:8443') {
-                   sh "kubectl set image deployment/$K8_NAME $K8_NAME=$DOCKERHUB_CREDENTIALS_USR/$REPOSITORY:${latest_tag} --record=true"
+                 sh "helm upgrade --install $K8_NAME ./Chart-bot --set containers.image=$DOCKERHUB_CREDENTIALS_USR/$REPOSITORY:${latest_tag},BOT_TOKEN=$BOT_TOKEN_PSW,API_TOKEN=$API_TOKEN_PSW,JENKINS_URL=$JENKINS_URL_PSW,JENKINS_PASSWORD=$JENKINS_PASSWORD_PSW,JENKINS_USERNAME=$JENKINS_USERNAME_PSW"
                 }
-          
             }
         }
     }
