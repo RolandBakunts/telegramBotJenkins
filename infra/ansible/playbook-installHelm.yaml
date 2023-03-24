@@ -4,26 +4,13 @@
   become: true
   vars:
       source_secret_file: "../kubernetes/Chart-bot"
-      destin_file: "/home/ubuntu"
+      destin_file: "/var/lib/jenkins/workspace/deploy"
       env_file: "../../.env"
       helm_instance_name: "telegrambot"
-      chart_dir_path: "./Chart-bot"
-  tasks:
-    - name: Add Helm GPG key
-      shell: |
-        curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
-
-    - name: Install apt-transport-https package
-      apt:
-        name: apt-transport-https
-        state: present
-
-    - name: Add Helm repository
-      shell: echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-
-    - name: Add Helm repository
-      shell: sudo apt-get install helm
-
+      chart_dir_path: "/var/lib/jenkins/workspace/deploy/Chart-bot"
+      kubeconfig_path: "/home/ubuntu/.kube/config"
+  tasks:  
+  - block:
     - name: Display BOT_TOKEN environment variable
       shell: "sed -n 's/^BOT_TOKEN=//p' {{ env_file }}"
       register: BOT_TOKEN
@@ -43,9 +30,26 @@
     - name: Display JENKINS_USERNAME environment variable
       shell: "sed -n 's/^JENKINS_USERNAME=//p' {{ env_file }}"
       register: JENKINS_USERNAME
+    delegate_to: localhost
+    become: false
 
-    - name: copy Chart-bot directory
-      copy: src={{ source_secret_file }} dest={{ destin_file }} mode=0555
+  - name: Add Helm GPG key
+    shell: |
+      curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
 
-    - name: copy Chart-bot directory
-      shell: "helm upgrade --install {{helm_instance_name}} {{chart_dir_path}} --set BOT_TOKEN={{BOT_TOKEN}},API_TOKEN={{API_TOKEN}},JENKINS_URL={{JENKINS_URL}},JENKINS_PASSWORD={{JENKINS_PASSWORD}},JENKINS_USERNAME={{JENKINS_USERNAME}}"
+  - name: Install apt-transport-https package
+    apt:
+      name: apt-transport-https
+      state: present
+
+  - name: Add Helm repository
+    shell: echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+
+  - name: Add Helm repository
+    shell: sudo apt-get install helm
+
+  - name: copy Chart-bot directory
+    copy: src={{ source_secret_file }} dest={{ destin_file }} mode=0555
+
+  - name: Create a chart
+    shell: "helm install --kubeconfig={{ kubeconfig_path }} {{ helm_instance_name }} {{ chart_dir_path }} --set BOT_TOKEN={{ BOT_TOKEN.stdout }},API_TOKEN={{ API_TOKEN.stdout }},JENKINS_URL={{ JENKINS_URL.stdout }},JENKINS_PASSWORD={{ JENKINS_PASSWORD.stdout }},JENKINS_USERNAME={{ JENKINS_USERNAME.stdout }}"

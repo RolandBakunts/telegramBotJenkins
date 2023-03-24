@@ -6,3 +6,4 @@
 /infra/terraform/terraform-key.pem
 /infra/terraform/public_ip.txt
 .env
+/infra/ansible/.kube*
