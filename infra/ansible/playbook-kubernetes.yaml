@@ -1,0 +1,20 @@
+---
+ - hosts: worker
+   become: yes
+   tasks:
+    - name:  Download the Google Cloud public signing key
+      shell: sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+   
+    - name: Add the Kubernetes apt repository
+      shell: echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+   
+    - name: Download key for Minikube
+      shell: curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+
+    - name:  Install Minikube
+      shell: sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+    - name: Start minikube
+      shell: minikube start
+
+    
